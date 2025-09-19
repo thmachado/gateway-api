@@ -10,7 +10,14 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 $registry = new CollectorRegistry(new InMemory());
 $counter = $registry->getOrRegisterCounter("app", "requests", "Number all requests", ["method", "endpoint"]);
-$counter->inc([$_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"]]);
+
+/** @var array<string> $labels  */
+$labels = [
+    "method" => $_SERVER["REQUEST_METHOD"] ?? "GET",
+    "endpoint" => $_SERVER["REQUEST_URI"] ?? "/"
+];
+
+$counter->inc($labels);
 
 header("Content-Type: " . RenderTextFormat::MIME_TYPE);
 $renderer = new RenderTextFormat();

@@ -24,7 +24,6 @@ final class LogTest extends TestCase
         $data = $this->testHandler->getRecords();
 
         $this->assertNotEmpty($data);
-        $this->assertIsArray($data);
         $this->assertEquals("My first log", $data[0]["message"]);
         $this->assertEquals("tests", $data[0]["channel"]);
         $this->assertEquals(["username", "password"], $data[0]["context"]);
