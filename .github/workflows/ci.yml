@@ -60,7 +60,7 @@ jobs:
         run: docker compose exec server ./vendor/bin/phpunit tests
 
       - name: Run PHPStan static analysis
-        run: docker compose exec server ./vendor/bin/phpstan analyse src --level max
+        run: docker compose exec server ./vendor/bin/phpstan analyse src tests public --level max
 
       - name: Stop containers
         if: always()

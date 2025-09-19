@@ -7,11 +7,16 @@ use PHPUnit\Framework\TestCase;
 
 final class DatabaseTest extends TestCase
 {
-    private ?PDO $pdo;
+    private PDO $pdo;
 
     protected function setUp(): void
     {
-        $this->pdo = Database::getInstance();
+        $pdo = Database::getInstance();
+        if ($pdo instanceof PDO === false) {
+            throw new RuntimeException("Database error!");
+        }
+
+        $this->pdo = $pdo;
         $this->pdo->beginTransaction();
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS users_test (
         id SERIAL PRIMARY KEY,
@@ -51,11 +56,14 @@ final class DatabaseTest extends TestCase
     public function testSelectUserEmpty(): void
     {
         $stmt = $this->pdo->query("SELECT firstname, lastname FROM users_test ORDER BY firstname, lastname ASC");
+        if ($stmt === false) {
+            throw new RuntimeException("Database error!");
+        }
+
         $query = $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $this->assertTrue($query);
-        $this->assertIsArray($result);
         $this->assertCount(0, $result);
     }
 
@@ -68,12 +76,18 @@ final class DatabaseTest extends TestCase
         $stmt->execute();
 
         $stmt = $this->pdo->query("SELECT firstname, lastname FROM users_test ORDER BY firstname, lastname ASC");
+        if ($stmt === false) {
+            throw new RuntimeException("Database error!");
+        }
+
         $query = $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $this->assertTrue($query);
-        $this->assertIsArray($result);
+        $this->assertNotEmpty($result);
         $this->assertCount(1, $result);
+
+        /**  @var array<int, array<string>> $result */
         $this->assertEquals("Thiago", $result[0]["firstname"]);
         $this->assertEquals("Machado", $result[0]["lastname"]);
     }
