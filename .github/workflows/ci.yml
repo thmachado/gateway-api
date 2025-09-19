@@ -1,0 +1,67 @@
+name: My PHP CI Workflow ♥
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+
+      - name: Setup Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_pgsql
+          coverage: none
+
+      - name: Setup environment variables
+        run: |
+          echo "DB_HOST=db" >> .env
+          echo "DB_NAME=test_name" >> .env
+          echo "DB_USER=test_user" >> .env
+          echo "DB_PASSWORD=test_password" >> .env
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Install dependencies
+        run: composer install --no-progress --no-interaction
+
+      - name: Start application server
+        run: |
+          docker compose up -d --build --wait
+
+      - name: Check server health
+        run: |
+          curl -I http://localhost:8080 || true
+          docker ps
+          docker logs $(docker ps -q --filter name=server)
+
+      - name: Run PHPUnit tests
+        env:
+          DB_HOST: db
+          DB_NAME: test_name
+          DB_USER: test_user
+          DB_PASSWORD: test_password
+        run: docker compose exec server ./vendor/bin/phpunit tests
+
+      - name: Run PHPStan static analysis
+        run: docker compose exec server ./vendor/bin/phpstan analyse src --level max
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down
