@@ -23,6 +23,7 @@
         "php-di/php-di": "^7.1",
         "monolog/monolog": "^3.9",
         "promphp/prometheus_client_php": "^2.14",
-        "respect/validation": "^2.4"
+        "respect/validation": "^2.4",
+        "firebase/php-jwt": "^6.11"
     }
 }

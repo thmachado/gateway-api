@@ -157,11 +157,14 @@ class Router
      * Summary of get
      * @param string $path
      * @param callable(ServerRequestInterface): ResponseInterface|array{0: class-string, 1: string} $callback
+     * @param array<MiddlewareInterface> $middlewares
+
      * @return void
      */
-    public function get(string $path, array|callable $callback): void
+
+    public function get(string $path, array|callable $callback, array $middlewares = []): void
     {
-        $this->registerRoute("GET", $path, $callback);
+        $this->registerRoute("GET", $path, $callback, $middlewares);
     }
 
     /**
@@ -169,32 +172,38 @@ class Router
      * @param string $path
      * @param array<callable, string>|callable $callback
      * @param callable(ServerRequestInterface): ResponseInterface|array{0: class-string, 1: string} $callback
+     * @param array<MiddlewareInterface> $middlewares
+
      * @return void
      */
-    public function post(string $path, array|callable $callback): void
+    public function post(string $path, array|callable $callback, array $middlewares = []): void
     {
-        $this->registerRoute("POST", $path, $callback);
+        $this->registerRoute("POST", $path, $callback, $middlewares);
     }
 
     /**
      * Summary of put
      * @param string $path
      * @param callable(ServerRequestInterface): ResponseInterface|array{0: class-string, 1: string} $callback
+     * @param array<MiddlewareInterface> $middlewares
+
      * @return void
      */
-    public function put(string $path, array|callable $callback): void
+    public function put(string $path, array|callable $callback, array $middlewares = []): void
     {
-        $this->registerRoute("PUT", $path, $callback);
+        $this->registerRoute("PUT", $path, $callback, $middlewares);
     }
 
     /**
      * Summary of delete
      * @param string $path
      * @param callable(ServerRequestInterface): ResponseInterface|array{0: class-string, 1: string} $callback
+     * @param array<MiddlewareInterface> $middlewares
+
      * @return void
      */
-    public function delete(string $path, array|callable $callback): void
+    public function delete(string $path, array|callable $callback, array $middlewares = []): void
     {
-        $this->registerRoute("DELETE", $path, $callback);
+        $this->registerRoute("DELETE", $path, $callback, $middlewares);
     }
 }
