@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\{CustomerController, TokenController};
 use App\Core\{Database, Log, Router, Token};
-use App\Middleware\{LoggerMiddleware, JwtMiddleware};
+use App\Middleware\{LoggerMiddleware, JwtMiddleware, SecurityHeadersMiddleware};
 use App\Repositories\CustomerRepository;
 use App\Services\CustomerService;
 use App\Validators\CustomerValidator;
@@ -21,6 +21,7 @@ $containerBuilder->addDefinitions([
     LoggerInterface::class => Log::getInstance(),
     LoggerMiddleware::class => DI\autowire(),
     JwtMiddleware::class => DI\autowire(),
+    SecurityHeadersMiddleware::class => DI\autowire(),
     CustomerRepository::class => DI\autowire(),
     CustomerService::class => DI\autowire(),
     CustomerValidator::class => DI\autowire(),
@@ -34,7 +35,10 @@ $router = new Router($container);
 $loggerMiddleware = $container->get(LoggerMiddleware::class);
 /** @var \App\Middleware\MiddlewareInterface $jwtMiddleware; */
 $jwtMiddleware = $container->get(JwtMiddleware::class);
+/** @var \App\Middleware\MiddlewareInterface $headersMiddleware; */
+$headersMiddleware = $container->get(SecurityHeadersMiddleware::class);
 $router->addMiddleware($loggerMiddleware);
+$router->addMiddleware($headersMiddleware);
 
 $router->get("/health", function (): JsonResponse {
     return new JsonResponse(["status" => "Health check is ok!"], 200);
