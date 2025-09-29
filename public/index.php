@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\{CustomerController, TokenController};
 use App\Core\{Database, Log, Router, Token};
-use App\Middleware\{LoggerMiddleware, JwtMiddleware, SecurityHeadersMiddleware};
+use App\Middleware\{LoggerMiddleware, ContentTypeMiddleware, JwtMiddleware, SecurityHeadersMiddleware};
 use App\Repositories\CustomerRepository;
 use App\Services\CustomerService;
 use App\Validators\CustomerValidator;
@@ -22,6 +22,7 @@ $containerBuilder->addDefinitions([
     LoggerMiddleware::class => DI\autowire(),
     JwtMiddleware::class => DI\autowire(),
     SecurityHeadersMiddleware::class => DI\autowire(),
+    ContentTypeMiddleware::class => DI\autowire(),
     CustomerRepository::class => DI\autowire(),
     CustomerService::class => DI\autowire(),
     CustomerValidator::class => DI\autowire(),
@@ -37,6 +38,8 @@ $loggerMiddleware = $container->get(LoggerMiddleware::class);
 $jwtMiddleware = $container->get(JwtMiddleware::class);
 /** @var \App\Middleware\MiddlewareInterface $headersMiddleware; */
 $headersMiddleware = $container->get(SecurityHeadersMiddleware::class);
+/** @var \App\Middleware\MiddlewareInterface $contentTypeMiddleware; */
+$contentTypeMiddleware = $container->get(ContentTypeMiddleware::class);
 $router->addMiddleware($loggerMiddleware);
 $router->addMiddleware($headersMiddleware);
 
@@ -46,9 +49,9 @@ $router->get("/health", function (): JsonResponse {
 
 $router->get("/api/v1/token", [TokenController::class, "index"]);
 $router->get("/api/v1/customers", [CustomerController::class, "index"], [$jwtMiddleware]);
-$router->post("/api/v1/customers", [CustomerController::class, "store"], [$jwtMiddleware]);
+$router->post("/api/v1/customers", [CustomerController::class, "store"], [$jwtMiddleware, $contentTypeMiddleware]);
 $router->get("/api/v1/customers/{code}", [CustomerController::class, "show"], [$jwtMiddleware]);
-$router->put("/api/v1/customers/{code}", [CustomerController::class, "update"], [$jwtMiddleware]);
+$router->put("/api/v1/customers/{code}", [CustomerController::class, "update"], [$jwtMiddleware, $contentTypeMiddleware]);
 $router->delete("/api/v1/customers/{code}", [CustomerController::class, "delete"], [$jwtMiddleware]);
 
 $response = $router->dispatch(ServerRequestFactory::fromGlobals());
