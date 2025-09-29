@@ -6,12 +6,16 @@ namespace App\Repositories;
 
 use App\Models\Builders\CustomerBuilder;
 use App\Models\Customer;
+use App\Services\CacheService;
 use PDO;
 
 class CustomerRepository implements CustomerRepositoryInterface
 {
-    public function __construct(private PDO $pdo)
-    {
+    public function __construct(
+        private PDO $pdo,
+        private CacheService $cacheService,
+        private string $cacheKey = "app:customers"
+    ) {
     }
 
     /**
@@ -19,7 +23,15 @@ class CustomerRepository implements CustomerRepositoryInterface
      * @return array<int, array{code: string, document: string, external: string, name: string, emails: array<string>, phones: array<string>}>
      */
     public function findAll(): array
-    {
+    {   
+        /**
+         * @var array<int, array{code: string, document: string, external: string, name: string, emails: array<string>, phones: array<string>}> $cachedCustomers
+         */
+        $cachedCustomers = $this->cacheService->get($this->cacheKey);
+        if ($cachedCustomers) {
+            return $cachedCustomers;
+        }
+
         $data = [];
         $stmt = $this->pdo->prepare("SELECT id, code, external, name, document, emails, phones FROM customers ORDER BY name ASC");
         $stmt->execute();
@@ -53,11 +65,42 @@ class CustomerRepository implements CustomerRepositoryInterface
             $data[] = $customerModel->toArray();
         }
 
+        if (empty($data) === false) {
+            $this->cacheService->set($this->cacheKey, $data);
+        }
+
         return $data;
     }
 
     public function findByCode(string $code): ?Customer
     {
+         /**
+         * @var array<string, string>|false $cachedUser
+         */
+        $cachedUser = $this->cacheService->get("{$this->cacheKey}:{$code}");
+        if ($cachedUser) {
+            /**
+             * @var array<string> $emails
+             */
+            $emails = json_decode((string) $cachedUser["emails"], true) ?? [];
+            /**
+             * @var array<string> $phones
+             */
+            $phones = json_decode((string) $cachedUser["phones"], true) ?? [];
+
+            $customerModel = (new CustomerBuilder())
+                ->withExternal($cachedUser["external"])
+                ->withName($cachedUser["name"])
+                ->withDocument($cachedUser["document"])
+                ->withEmails((array) $emails)
+                ->withPhones((array) $phones)
+                ->build();
+
+            $customerModel->setId((int) $cachedUser["id"]);
+            $customerModel->setCode($cachedUser["code"]);
+            return $customerModel;
+        }
+
         $stmt = $this->pdo->prepare("SELECT id, code, external, name, document, emails, phones FROM customers WHERE code = :code");
         $stmt->bindValue(":code", $code, PDO::PARAM_STR);
         $stmt->execute();
@@ -88,6 +131,7 @@ class CustomerRepository implements CustomerRepositoryInterface
 
         $customerModel->setId((int) $customer["id"]);
         $customerModel->setCode($customer["code"]);
+        $this->cacheService->set("{$this->cacheKey}:" . $customer["code"], $customerModel->toArray());
         return $customerModel;
     }
 
@@ -134,6 +178,8 @@ class CustomerRepository implements CustomerRepositoryInterface
 
         $customerModel->setId((int) $customer["id"]);
         $customerModel->setCode($customer["code"]);
+        $this->cacheService->del($this->cacheKey);
+
         return $customerModel;
     }
 
@@ -169,18 +215,26 @@ class CustomerRepository implements CustomerRepositoryInterface
         $stmt = $this->pdo->prepare("UPDATE customers SET " . implode(",", $updateFields) . " WHERE id = :id");
         $stmt->execute($bindings);
 
+        $this->cacheService->del("{$this->cacheKey}:{$customer->getCode()}");
+        $this->cacheService->del($this->cacheKey);
         return $customer;
     }
 
     public function delete(Customer $customer): bool
     {
+        $code = $customer->getCode();
         $stmt = $this->pdo->prepare("DELETE FROM customers WHERE code = :code");
-        $stmt->bindValue(":code", $customer->getCode(), PDO::PARAM_STR);
+        $stmt->bindValue(":code", $code, PDO::PARAM_STR);
         $stmt->execute();
 
         if ($stmt->rowCount() === 1) {
             return true;
         }
+
+        $this->cacheService->pipeline(function () use ($code): void {
+            $this->cacheService->del("{$this->cacheKey}:{$code}");
+            $this->cacheService->del($this->cacheKey);
+        });
 
         return false;
     }
