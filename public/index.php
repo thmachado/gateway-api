@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\{CustomerController, TokenController};
-use App\Core\{Database, Log, Router, Token};
+use App\Core\{Database, Log, Redis, Router, Token};
 use App\Middleware\{LoggerMiddleware, ContentTypeMiddleware, JwtMiddleware, SecurityHeadersMiddleware};
 use App\Repositories\CustomerRepository;
 use App\Services\CustomerService;
@@ -11,6 +11,7 @@ use App\Validators\CustomerValidator;
 use Laminas\Diactoros\Response\JsonResponse;
 use Laminas\Diactoros\ServerRequestFactory;
 use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
+use Predis\Client;
 use Psr\Log\LoggerInterface;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -18,6 +19,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $containerBuilder = new DI\ContainerBuilder();
 $containerBuilder->addDefinitions([
     PDO::class => Database::getInstance(),
+    Client::class => Redis::getInstance(),
     LoggerInterface::class => Log::getInstance(),
     LoggerMiddleware::class => DI\autowire(),
     JwtMiddleware::class => DI\autowire(),

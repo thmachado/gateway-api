@@ -2,13 +2,35 @@
 
 declare(strict_types=1);
 
+use App\Core\Log;
+use App\Core\Redis;
 use App\Models\Builders\CustomerBuilder;
 use App\Models\Customer;
+use App\Repositories\CacheRepository;
 use App\Repositories\CustomerRepository;
+use App\Services\CacheService;
 use PHPUnit\Framework\TestCase;
+use Predis\Client;
 
 final class CustomerRepositoryTest extends TestCase
 {
+    private Client $redis;
+    private CacheService $cacheService;
+    private CacheRepository $cacheRepository;
+    private string $cacheKey = "app:customers_tests";
+
+    protected function setUp(): void
+    {
+        $redis = Redis::getInstance();
+        if ($redis instanceof Client === false) {
+            throw new RuntimeException("Redis error!");
+        }
+
+        $this->redis = $redis;
+        $this->cacheRepository = new CacheRepository(Log::getInstance(), $this->redis,  60);
+        $this->cacheService = new CacheService($this->cacheRepository);
+    }
+
     public function testFindAllRepository(): void
     {
         $stmt = $this->createMock(PDOStatement::class);
@@ -28,7 +50,7 @@ final class CustomerRepositoryTest extends TestCase
         $pdo = $this->createMock(PDO::class);
         $pdo->method("prepare")->willReturn($stmt);
 
-        $repository = new CustomerRepository($pdo);
+        $repository = new CustomerRepository($pdo, $this->cacheService, $this->cacheKey);
         $customers = $repository->findAll();
 
         $this->assertCount(1, $customers);
@@ -53,7 +75,7 @@ final class CustomerRepositoryTest extends TestCase
 
         $pdo = $this->createMock(PDO::class);
         $pdo->method("prepare")->willReturn($stmt);
-        $repository = new CustomerRepository($pdo);
+        $repository = new CustomerRepository($pdo, $this->cacheService, $this->cacheKey);
         $customer = $repository->findByCode("uuid001");
 
         $this->assertInstanceOf(Customer::class, $customer);
@@ -84,7 +106,7 @@ final class CustomerRepositoryTest extends TestCase
             ->willReturnOnConsecutiveCalls($stmt, $stmtQuery);
         $pdo->method("lastInsertId")->willReturn("1");
 
-        $repository = new CustomerRepository($pdo);
+        $repository = new CustomerRepository($pdo, $this->cacheService, $this->cacheKey);
         $customer = $repository->save([
             "external" => "externalhash002",
             "name" => "Thiago",
@@ -107,7 +129,7 @@ final class CustomerRepositoryTest extends TestCase
         $pdo = $this->createMock(PDO::class);
         $pdo->method("prepare")->willReturn($stmt);
 
-        $repository = new CustomerRepository($pdo);
+        $repository = new CustomerRepository($pdo, $this->cacheService, $this->cacheKey);
 
         $customer = (new CustomerBuilder())
             ->withExternal("externalhash002")
@@ -153,9 +175,8 @@ final class CustomerRepositoryTest extends TestCase
         $customer->setId(1);
         $customer->setCode("uuid001");
 
-        $repository = new CustomerRepository($pdo);
+        $repository = new CustomerRepository($pdo, $this->cacheService, $this->cacheKey);
         $result = $repository->delete($customer);
-
         $this->assertTrue($result);
     }
 }
