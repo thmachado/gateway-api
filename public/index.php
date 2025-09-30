@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\{CustomerController, TokenController};
 use App\Core\{Database, Log, Redis, Router, Token};
-use App\Middleware\{LoggerMiddleware, ContentTypeMiddleware, JwtMiddleware, SecurityHeadersMiddleware};
+use App\Middleware\{LoggerMiddleware, ContentTypeMiddleware, JwtMiddleware, RateLimitMiddleware, SecurityHeadersMiddleware};
 use App\Repositories\CustomerRepository;
 use App\Services\CustomerService;
 use App\Validators\CustomerValidator;
@@ -25,6 +25,7 @@ $containerBuilder->addDefinitions([
     JwtMiddleware::class => DI\autowire(),
     SecurityHeadersMiddleware::class => DI\autowire(),
     ContentTypeMiddleware::class => DI\autowire(),
+    RateLimitMiddleware::class => DI\create()->constructor(Redis::getInstance()),
     CustomerRepository::class => DI\autowire(),
     CustomerService::class => DI\autowire(),
     CustomerValidator::class => DI\autowire(),
@@ -42,8 +43,11 @@ $jwtMiddleware = $container->get(JwtMiddleware::class);
 $headersMiddleware = $container->get(SecurityHeadersMiddleware::class);
 /** @var \App\Middleware\MiddlewareInterface $contentTypeMiddleware; */
 $contentTypeMiddleware = $container->get(ContentTypeMiddleware::class);
+/** @var \App\Middleware\MiddlewareInterface $rateLimitMiddleware; */
+$rateLimitMiddleware = $container->get(RateLimitMiddleware::class);
 $router->addMiddleware($loggerMiddleware);
 $router->addMiddleware($headersMiddleware);
+$router->addMiddleware($rateLimitMiddleware);
 
 $router->get("/health", function (): JsonResponse {
     return new JsonResponse(["status" => "Health check is ok!"], 200);
