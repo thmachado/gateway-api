@@ -8,9 +8,9 @@ use App\Repositories\CacheRepository;
 
 class CacheService
 {
-    public function __construct(private CacheRepository $cacheRepository)
-    {
-    }
+    public function __construct(
+        private CacheRepository $cacheRepository
+    ) {}
 
     public function get(string $key): mixed
     {

@@ -19,7 +19,6 @@ class Log
             $handler = new StreamHandler("php://stdout", Logger::DEBUG);
             $handler->setFormatter(new JsonFormatter());
             $logger->pushHandler($handler);
-
             self::$instance = $logger;
         }
 

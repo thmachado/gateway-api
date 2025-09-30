@@ -15,15 +15,14 @@ class CustomerRepository implements CustomerRepositoryInterface
         private PDO $pdo,
         private CacheService $cacheService,
         private string $cacheKey = "app:customers"
-    ) {
-    }
+    ) {}
 
     /**
      * Summary of findAll
      * @return array<int, array{code: string, document: string, external: string, name: string, emails: array<string>, phones: array<string>}>
      */
     public function findAll(): array
-    {   
+    {
         /**
          * @var array<int, array{code: string, document: string, external: string, name: string, emails: array<string>, phones: array<string>}> $cachedCustomers
          */
@@ -74,7 +73,7 @@ class CustomerRepository implements CustomerRepositoryInterface
 
     public function findByCode(string $code): ?Customer
     {
-         /**
+        /**
          * @var array<string, string>|false $cachedUser
          */
         $cachedUser = $this->cacheService->get("{$this->cacheKey}:{$code}");

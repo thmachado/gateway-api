@@ -37,8 +37,7 @@ class Customer
         private string $document,
         private array $emails = [],
         private array $phones = []
-    ) {
-    }
+    ) {}
 
     public function getId(): int
     {

@@ -28,8 +28,7 @@ class CustomerController
     public function __construct(
         private CustomerService $customerService,
         private LoggerInterface $log
-    ) {
-    }
+    ) {}
 
     #[OA\Get(
         path: "/api/v1/customers",
@@ -132,7 +131,6 @@ class CustomerController
             $this->log->error("Error", ["exception" => "Invalid customer code", "method" => $request->getMethod(), "path" => $request->getUri()->getPath()]);
             return new JsonResponse(["error" => ["code" => 400, "message" => "Invalid customer code"]], 400);
         }
-
         /**
          * @var array{name?:string, document?: string} $data
          */
@@ -206,8 +204,7 @@ class CustomerController
                 return new JsonResponse(["error" => ["code" => 400, "message" => "Store is failed"]], 400);
             }
 
-            return new JsonResponse($customer->toArray(), 201, ["Location" => "/api/v1/customers/" . $customer->getCode()]);
-
+            return new JsonResponse(["customer" => $customer->toArray()], 201, ["Location" => "/api/v1/customers/" . $customer->getCode()]);
         } catch (ValidationException $e) {
             $this->log->error("Error", ["exception" => $e->getMessage(), "method" => $request->getMethod(), "path" => $request->getUri()->getPath()]);
             return new JsonResponse(["error" => ["code" => $e->getCode(), "message" => $e->getMessage(), "errors" => $e->getErrors()]], $e->getCode());
@@ -255,5 +252,4 @@ class CustomerController
 
         return new JsonResponse([], 204);
     }
-
 }

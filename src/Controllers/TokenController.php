@@ -30,14 +30,11 @@ class TokenController
 {
     public function __construct(
         private Token $token
-    ) {
-
-    }
+    ) {}
 
     public function index(): ResponseInterface
     {
         $now = time();
-
         return new JsonResponse([
             "token" => $this->token->generateToken([
                 "sub" => "1917",

@@ -60,4 +60,16 @@ final class CustomerValidatorTest extends TestCase
 
         $this->addToAssertionCount(1);
     }
+
+    public function testPartialDataOnlyOne(): void
+    {
+        $this->customerValidator->validate(["name" => "Thiago"], false);
+        $this->addToAssertionCount(1);
+    }
+
+    public function testPartialData(): void
+    {
+        $this->customerValidator->validate(["name" => "Thiago", "document" => "4053344852"], false);
+        $this->addToAssertionCount(1);
+    }
 }
