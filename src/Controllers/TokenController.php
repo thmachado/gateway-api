@@ -35,7 +35,6 @@ class TokenController
     public function index(): ResponseInterface
     {
         $now = time();
-
         return new JsonResponse([
             "token" => $this->token->generateToken([
                 "sub" => "1917",

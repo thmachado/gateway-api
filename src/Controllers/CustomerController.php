@@ -85,12 +85,8 @@ class CustomerController
     )]
     public function show(ServerRequestInterface $request): ResponseInterface
     {
-        $code = $request->getAttributes()["code"];
-        if (is_string($code) === false || empty($code) || $this->validatePattern($code) === false) {
-            $this->log->error("Error", ["exception" => "Invalid customer code", "method" => $request->getMethod(), "path" => $request->getUri()->getPath()]);
-            return new JsonResponse(["error" => ["code" => 400, "message" => "Invalid customer code"]], 400);
-        }
-
+        /** @var string $code */
+        $code = $this->validateCode($request);
         $customer = $this->customerService->getCustomerByCode($code);
         if ($customer === null) {
             $this->log->error("Error", ["exception" => "Customer not found", "method" => $request->getMethod(), "path" => $request->getUri()->getPath()]);
@@ -126,12 +122,8 @@ class CustomerController
     )]
     public function update(ServerRequestInterface $request): ResponseInterface
     {
-        $code = $request->getAttributes()["code"];
-        if (is_string($code) === false || empty($code) || $this->validatePattern($code) === false) {
-            $this->log->error("Error", ["exception" => "Invalid customer code", "method" => $request->getMethod(), "path" => $request->getUri()->getPath()]);
-            return new JsonResponse(["error" => ["code" => 400, "message" => "Invalid customer code"]], 400);
-        }
-
+        /** @var string $code */
+        $code = $this->validateCode($request);
         /**
          * @var array{name?:string, document?: string} $data
          */
@@ -205,7 +197,7 @@ class CustomerController
                 return new JsonResponse(["error" => ["code" => 400, "message" => "Store is failed"]], 400);
             }
 
-            return new JsonResponse($customer->toArray(), 201, ["Location" => "/api/v1/customers/" . $customer->getCode()]);
+            return new JsonResponse(["customer" => $customer->toArray()], 201, ["Location" => "/api/v1/customers/" . $customer->getCode()]);
         } catch (ValidationException $e) {
             $this->log->error("Error", ["exception" => $e->getMessage(), "method" => $request->getMethod(), "path" => $request->getUri()->getPath()]);
             return new JsonResponse(["error" => ["code" => $e->getCode(), "message" => $e->getMessage(), "errors" => $e->getErrors()]], $e->getCode());
@@ -234,12 +226,8 @@ class CustomerController
     )]
     public function delete(ServerRequestInterface $request): ResponseInterface
     {
-        $code = $request->getAttributes()["code"];
-        if (is_string($code) === false || empty($code) || $this->validatePattern($code) === false) {
-            $this->log->error("Error", ["exception" => "Invalid customer code", "method" => $request->getMethod(), "path" => $request->getUri()->getPath()]);
-            return new JsonResponse(["error" => ["code" => 400, "message" => "Invalid customer code"]], 400);
-        }
-
+        /** @var string $code */
+        $code = $this->validateCode($request);
         $findCustomer = $this->customerService->getCustomerByCode($code);
         if ($findCustomer === null) {
             $this->log->error("Error", ["exception" => "Customer not found", "method" => $request->getMethod(), "path" => $request->getUri()->getPath()]);
@@ -252,5 +240,16 @@ class CustomerController
         }
 
         return new JsonResponse([], 204);
+    }
+
+    private function validateCode(ServerRequestInterface $request): string|ResponseInterface
+    {
+        $code = $request->getAttributes()["code"];
+        if (is_string($code) === false || empty($code) || $this->validatePattern($code) === false) {
+            $this->log->error("Error", ["exception" => "Invalid customer code", "method" => $request->getMethod(), "path" => $request->getUri()->getPath()]);
+            return new JsonResponse(["error" => ["code" => 400, "message" => "Invalid customer code"]], 400);
+        }
+
+        return $code;
     }
 }

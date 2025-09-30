@@ -19,7 +19,7 @@ class JwtMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $authorization = $request->getHeaderLine("Authorization");
-        if (empty($authorization) || is_string($authorization) === false) {
+        if (empty($authorization)) {
             return new JsonResponse(["error" => ["code" => 401, "message" => "Token not provided"]], 401);
         }
 
