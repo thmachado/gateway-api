@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Core\Log;
-use App\Core\Redis;
+use App\Core\{Log, Redis};
 use App\Models\Builders\CustomerBuilder;
 use App\Models\Customer;
-use App\Repositories\CacheRepository;
-use App\Repositories\CustomerRepository;
+use App\Repositories\{CacheRepository, CustomerRepository};
 use App\Services\CacheService;
 use PHPUnit\Framework\TestCase;
 use Predis\Client;
@@ -125,7 +123,6 @@ final class CustomerRepositoryTest extends TestCase
     {
         $stmt = $this->createMock(PDOStatement::class);
         $stmt->method("execute")->willReturn(true);
-
         $pdo = $this->createMock(PDO::class);
         $pdo->method("prepare")->willReturn($stmt);
 
@@ -159,7 +156,7 @@ final class CustomerRepositoryTest extends TestCase
     {
         $stmt = $this->createMock(PDOStatement::class);
         $stmt->method('execute')->willReturn(true);
-        $stmt->method('rowCount')->willReturn(1); // <-- importante
+        $stmt->method('rowCount')->willReturn(1);
 
         $pdo = $this->createMock(PDO::class);
         $pdo->method('prepare')->willReturn($stmt);

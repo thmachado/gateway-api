@@ -14,8 +14,7 @@ class CacheRepository
         private LoggerInterface $log,
         private ?Client $client = null,
         private int $ttl = 60,
-    ) {
-    }
+    ) {}
 
     /**
      * Summary of get

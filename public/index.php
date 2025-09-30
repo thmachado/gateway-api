@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\{CustomerController, TokenController};
 use App\Core\{Database, Log, Redis, Router, Token};
-use App\Middleware\{LoggerMiddleware, ContentTypeMiddleware, JwtMiddleware, RateLimitMiddleware, SecurityHeadersMiddleware};
+use App\Middleware\{ContentTypeMiddleware, JwtMiddleware, LoggerMiddleware, RateLimitMiddleware, SecurityHeadersMiddleware};
 use App\Repositories\CustomerRepository;
 use App\Services\CustomerService;
 use App\Validators\CustomerValidator;
