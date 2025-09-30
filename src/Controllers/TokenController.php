@@ -30,9 +30,7 @@ class TokenController
 {
     public function __construct(
         private Token $token
-    ) {
-
-    }
+    ) {}
 
     public function index(): ResponseInterface
     {

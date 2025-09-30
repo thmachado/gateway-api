@@ -10,8 +10,7 @@ class Token
 {
     public function __construct(
         private string $secret = "Palmeiras"
-    ) {
-    }
+    ) {}
 
     /**
      * Summary of generateToken

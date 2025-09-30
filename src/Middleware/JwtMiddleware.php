@@ -15,10 +15,14 @@ class JwtMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private Token $token
-    ) {
-    }
+    ) {}
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $authorization = $request->getHeaderLine("Authorization");
+        if (empty($authorization) || is_string($authorization) === false) {
+            return new JsonResponse(["error" => ["code" => 401, "message" => "Token not provided"]], 401);
+        }
+
         [$authHeader, $bearer] = explode(" ", $request->getHeaderLine("Authorization"));
         if (empty($authHeader) || empty($bearer) || $authHeader !== "Bearer") {
             return new JsonResponse(["error" => ["code" => 401, "message" => "Token not provided"]], 401);

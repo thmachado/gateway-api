@@ -11,7 +11,7 @@ class Database
     private static ?PDO $instance = null;
 
     public static function getInstance(): ?PDO
-    {   
+    {
         $host = (string) getenv("DB_HOST");
         $database = (string) getenv("DB_NAME");
         $username = (string) getenv("DB_USER");

@@ -14,8 +14,7 @@ class CustomerService
     public function __construct(
         private CustomerRepository $customerRepository,
         private CustomerValidator $customerValidator
-    ) {
-    }
+    ) {}
 
     /**
      * Summary of getCustomers

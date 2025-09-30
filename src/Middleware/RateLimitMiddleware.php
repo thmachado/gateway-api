@@ -17,11 +17,10 @@ class RateLimitMiddleware implements MiddlewareInterface
         private int $attempts = 5,
         private int $jail = 450,
         private int $spaces = 450
-    ) {
-    }
+    ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {   
+    {
         /**
          * @var string $ip
          */

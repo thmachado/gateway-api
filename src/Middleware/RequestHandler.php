@@ -18,8 +18,7 @@ class RequestHandler implements RequestHandlerInterface
         private $controller,
         private array $middlewares = [],
         private int $index = 0
-    ) {
-    }
+    ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {

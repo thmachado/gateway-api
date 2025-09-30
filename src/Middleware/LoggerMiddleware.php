@@ -14,8 +14,7 @@ class LoggerMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private LoggerInterface $log
-    ) {
-    }
+    ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

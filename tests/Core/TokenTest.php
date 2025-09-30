@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 use App\Core\Token;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
+use Firebase\JWT\{Key, JWT};
 use PHPUnit\Framework\TestCase;
 
 final class TokenTest extends TestCase
@@ -19,22 +18,14 @@ final class TokenTest extends TestCase
 
     public function testGenerateToken(): void
     {
-        $token = $this->token->generateToken([
-            "user" => "test"
-        ]);
-
+        $token = $this->token->generateToken(["user" => "test"]);
         $this->assertEquals("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoidGVzdCJ9.cEDViXbyN4iL1TOK4MRUosg8qNgsFHPU8S0F3QTe07E", $token);
     }
 
     public function testValidToken(): void
     {
-        $token = $this->token->generateToken([
-            "user" => "test",
-            "data" => "test_data"
-        ]);
-
+        $token = $this->token->generateToken(["user" => "test", "data" => "test_data"]);
         $decoded = JWT::decode($token, new Key($this->secret, "HS256"));
-
         $this->assertEquals("test", $decoded->user);
         $this->assertEquals("test_data", $decoded->data);
     }
