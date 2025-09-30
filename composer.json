@@ -25,6 +25,7 @@
         "promphp/prometheus_client_php": "^2.14",
         "respect/validation": "^2.4",
         "firebase/php-jwt": "^6.11",
-        "predis/predis": "^3.2"
+        "predis/predis": "^3.2",
+        "zircote/swagger-php": "^5.4"
     }
 }

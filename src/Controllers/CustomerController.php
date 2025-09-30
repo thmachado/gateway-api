@@ -12,7 +12,15 @@ use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use OpenApi\Attributes as OA;
 
+#[OA\Info(title: "Gateway API", version: "0.1")]
+#[OA\SecurityScheme(
+    securityScheme: "bearerAuth",
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT"
+)]
 class CustomerController
 {
     use Validate;
@@ -23,6 +31,28 @@ class CustomerController
     ) {
     }
 
+    #[OA\Get(
+        path: "/api/v1/customers",
+        operationId: "getCustomers",
+        security: [["bearerAuth" => []]],
+        tags: ["Customers"],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "List all customers",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "count", type: "integer"),
+                        new OA\Property(
+                            property: "customers",
+                            type: "array",
+                            items: new OA\Items(ref: "#/components/schemas/Customer")
+                        )
+                    ]
+                )
+            )
+        ]
+    )]
     public function index(): ResponseInterface
     {
         $customers = $this->customerService->getCustomers();
@@ -32,6 +62,28 @@ class CustomerController
         ], 200);
     }
 
+    #[OA\Get(
+        path: "/api/v1/customers/{code}",
+        operationId: "getCustomerByCode",
+        security: [["bearerAuth" => []]],
+        tags: ["Customers"],
+        parameters: [
+            new OA\Parameter(name: "code", in: "path", required: true, schema: new OA\Schema(type: "string"))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Customer found",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "customer", ref: "#/components/schemas/Customer")
+                    ]
+                )
+            ),
+            new OA\Response(response: 400, description: "Invalid customer code"),
+            new OA\Response(response: 404, description: "Customer not found")
+        ]
+    )]
     public function show(ServerRequestInterface $request): ResponseInterface
     {
         $code = $request->getAttributes()["code"];
@@ -49,6 +101,30 @@ class CustomerController
         return new JsonResponse(["customer" => $customer->toArray()], 200);
     }
 
+    #[OA\Put(
+        path: "/api/v1/customers/{code}",
+        operationId: "updateCustomer",
+        security: [["bearerAuth" => []]],
+        tags: ["Customers"],
+        parameters: [
+            new OA\Parameter(name: "code", in: "path", required: true, schema: new OA\Schema(type: "string"))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "name", type: "string"),
+                    new OA\Property(property: "document", type: "string")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Customer updated", content: new OA\JsonContent(ref: "#/components/schemas/Customer")),
+            new OA\Response(response: 400, description: "Invalid request"),
+            new OA\Response(response: 404, description: "Customer not found"),
+            new OA\Response(response: 422, description: "Invalid format (only JSON)")
+        ]
+    )]
     public function update(ServerRequestInterface $request): ResponseInterface
     {
         $code = $request->getAttributes()["code"];
@@ -91,6 +167,21 @@ class CustomerController
         }
     }
 
+    #[OA\Post(
+        path: "/api/v1/customers",
+        operationId: "createCustomer",
+        security: [["bearerAuth" => []]],
+        tags: ["Customers"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(ref: "#/components/schemas/Customer")
+        ),
+        responses: [
+            new OA\Response(response: 201, description: "Customer created", content: new OA\JsonContent(ref: "#/components/schemas/Customer")),
+            new OA\Response(response: 400, description: "Invalid request"),
+            new OA\Response(response: 422, description: "Invalid format (only JSON)")
+        ]
+    )]
     public function store(ServerRequestInterface $request): ResponseInterface
     {
         $data = json_decode($request->getBody()->getContents(), true);
@@ -129,6 +220,20 @@ class CustomerController
         }
     }
 
+    #[OA\Delete(
+        path: "/api/v1/customers/{code}",
+        operationId: "deleteCustomer",
+        security: [["bearerAuth" => []]],
+        tags: ["Customers"],
+        parameters: [
+            new OA\Parameter(name: "code", in: "path", required: true, schema: new OA\Schema(type: "string"))
+        ],
+        responses: [
+            new OA\Response(response: 204, description: "Customer deleted"),
+            new OA\Response(response: 400, description: "Invalid customer code"),
+            new OA\Response(response: 404, description: "Customer not found")
+        ]
+    )]
     public function delete(ServerRequestInterface $request): ResponseInterface
     {
         $code = $request->getAttributes()["code"];

@@ -1,0 +1,182 @@
+openapi: 3.0.0
+info:
+  title: 'Gateway API'
+  version: '0.1'
+paths:
+  /api/v1/customers:
+    get:
+      tags:
+        - Customers
+      operationId: getCustomers
+      responses:
+        '200':
+          description: 'List all customers'
+          content:
+            application/json:
+              schema:
+                properties:
+                  count: { type: integer }
+                  customers: { type: array, items: { $ref: '#/components/schemas/Customer' } }
+                type: object
+      security:
+        -
+          bearerAuth: []
+    post:
+      tags:
+        - Customers
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        '201':
+          description: 'Customer created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          description: 'Invalid request'
+        '422':
+          description: 'Invalid format (only JSON)'
+      security:
+        -
+          bearerAuth: []
+  '/api/v1/customers/{code}':
+    get:
+      tags:
+        - Customers
+      operationId: getCustomerByCode
+      parameters:
+        -
+          name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Customer found'
+          content:
+            application/json:
+              schema:
+                properties:
+                  customer: { $ref: '#/components/schemas/Customer' }
+                type: object
+        '400':
+          description: 'Invalid customer code'
+        '404':
+          description: 'Customer not found'
+      security:
+        -
+          bearerAuth: []
+    put:
+      tags:
+        - Customers
+      operationId: updateCustomer
+      parameters:
+        -
+          name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                document:
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: 'Customer updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          description: 'Invalid request'
+        '404':
+          description: 'Customer not found'
+        '422':
+          description: 'Invalid format (only JSON)'
+      security:
+        -
+          bearerAuth: []
+    delete:
+      tags:
+        - Customers
+      operationId: deleteCustomer
+      parameters:
+        -
+          name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'Customer deleted'
+        '400':
+          description: 'Invalid customer code'
+        '404':
+          description: 'Customer not found'
+      security:
+        -
+          bearerAuth: []
+  /api/v1/token:
+    get:
+      tags:
+        - Token
+      summary: 'Generate JWT token'
+      operationId: getToken
+      responses:
+        '200':
+          description: 'JWT token generated'
+          content:
+            application/json:
+              schema:
+                properties:
+                  token: { description: 'JWT token', type: string }
+                type: object
+components:
+  schemas:
+    Customer:
+      properties:
+        code:
+          type: string
+        external:
+          type: string
+        name:
+          type: string
+        document:
+          type: string
+        emails:
+          type: array
+          items:
+            type: string
+        phones:
+          type: array
+          items:
+            type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      bearerFormat: JWT
+      scheme: bearer
+tags:
+  -
+    name: Customers
+    description: Customers
+  -
+    name: Token
+    description: Token
