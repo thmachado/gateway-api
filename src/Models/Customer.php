@@ -4,6 +4,20 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: "Customer",
+    type: "object",
+    properties: [
+        new OA\Property(property: "code", type: "string"),
+        new OA\Property(property: "external", type: "string"),
+        new OA\Property(property: "name", type: "string"),
+        new OA\Property(property: "document", type: "string"),
+        new OA\Property(property: "emails", type: "array", items: new OA\Items(type: "string")),
+        new OA\Property(property: "phones", type: "array", items: new OA\Items(type: "string")),
+    ]
+)]
 class Customer
 {
     private int $id;
@@ -50,7 +64,7 @@ class Customer
     {
         $this->external = $external;
     }
-    
+
     public function getExternal(): string
     {
         return $this->external;
