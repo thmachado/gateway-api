@@ -4,19 +4,6 @@
 This repository contains a production-ready RESTful API built with modern PHP, following clean architecture, SOLID principles, and best practices for security, performance, and maintainability.
 
 
-## Key features
-
-- JWT Authentication (stateless)
-- Rate Limiting (Redis-based)
-- PostgreSQL Database (with PDO)
-- Redis Caching
-- Dockerized Environment
-- GitHub Actions CI
-- Unit & Integration Tests (PHPUnit)
-- PSR Standards (PSR-4, PSR-7, PSR-11, PSR-15)
-- Security Headers (CSP, HSTS, XSS Protection)
-- Validation & Error Handling
-
 ## Technologies & Tools
 
 **Backend:** PHP 8.3, Laminas (Diactoros, HttpHandlerRunner)
